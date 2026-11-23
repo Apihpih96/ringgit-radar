@@ -32,6 +32,8 @@ jobs:
         env:
           CMC_API_KEY: ${{ secrets.CMC_API_KEY }}
         run: python build.py
+      - name: Publish API evidence with the site
+        run: mkdir -p site/evidence && cp evidence/*.json site/evidence/
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:
