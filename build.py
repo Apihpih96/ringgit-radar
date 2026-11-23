@@ -80,6 +80,41 @@ def tip_for_coin(c: dict) -> str:
     return f"{sym} is {'up' if d1 > 0 else 'down'} {abs(d1):.1f}% today, a normal day for crypto."
 
 
+def tip_for_coin_ms(c: dict) -> str:
+    """Bahasa Melayu version of tip_for_coin."""
+    d1, d7 = c["change_24h"], c["change_7d"]
+    sym = c["symbol"]
+    if c.get("stable"):
+        return f"{sym} ialah stablecoin: ia cuba kekal sekitar US$1, jadi hampir tidak bergerak."
+    if d1 <= -10:
+        return f"{sym} jatuh teruk hari ini. Kejatuhan mendadak selalu berlaku; jangan panik jual atau beli hanya kerana ia 'murah'."
+    if d1 >= 10:
+        return f"{sym} melonjak hari ini. Lonjakan besar selalunya reda; mengejarnya berisiko."
+    if d7 <= -15:
+        return f"{sym} mengalami minggu yang sukar, turun {abs(d7):.0f}%."
+    if d7 >= 15:
+        return f"{sym} naik {d7:.0f}% minggu ini. Prestasi kukuh, tetapi pergerakan lalu tidak menjanjikan masa depan."
+    if abs(d1) < 1.5:
+        return f"{sym} tenang hari ini, bergerak kurang daripada 1.5%."
+    return f"{sym} {'naik' if d1 > 0 else 'turun'} {abs(d1):.1f}% hari ini, hari biasa untuk kripto."
+
+
+MOOD_MS = [
+    (24, "Ketakutan melampau", "Ketakutan melampau: ramai orang menjual kerana panik. Harga boleh berayun dengan liar."),
+    (44, "Takut", "Takut: pasaran gelisah. Ambil masa dan elakkan keputusan tergesa-gesa."),
+    (55, "Neutral", "Neutral: tiada mood yang kuat buat masa ini."),
+    (75, "Tamak", "Tamak: orang teruja dan membeli. Berhati-hati dengan gembar-gembur."),
+    (100, "Tamak melampau", "Tamak melampau: banyak gembar-gembur. Inilah masa pemula selalu membeli di puncak."),
+]
+
+
+def mood_ms(value: int) -> tuple[str, str]:
+    for top, label, text in MOOD_MS:
+        if value <= top:
+            return label, text
+    return MOOD_MS[-1][1], MOOD_MS[-1][2]
+
+
 def mood_text(value: int) -> str:
     if value <= 24:
         return "Extreme fear: many people are selling in panic. Prices can swing wildly."
@@ -120,6 +155,7 @@ def build() -> dict:
             "logo": f"https://s2.coinmarketcap.com/static/img/coins/64x64/{item['id']}.png",
         }
         c["tip"] = tip_for_coin(c)
+        c["tip_ms"] = tip_for_coin_ms(c)
         coins.append(c)
 
     # 2. Global market in MYR
@@ -135,17 +171,24 @@ def build() -> dict:
         fgb = cmc_get("/v3/fear-and-greed/latest")
         save_evidence("fear_and_greed", "/v3/fear-and-greed/latest", {}, fgb)
         d = fgb["data"]
-        fg = {"value": int(d["value"]), "label": d["value_classification"], "text": mood_text(int(d["value"]))}
+        v = int(d["value"])
+        lab_ms, txt_ms = mood_ms(v)
+        fg = {"value": v, "label": d["value_classification"], "text": mood_text(v), "label_ms": lab_ms, "text_ms": txt_ms}
     except Exception as e:  # noqa: BLE001
         print(f"fear & greed unavailable: {e}", file=sys.stderr)
 
     movers = [c for c in coins if not c["stable"]]
-    gainers = sorted(movers, key=lambda c: c["change_24h"], reverse=True)[:3]
-    losers = sorted(movers, key=lambda c: c["change_24h"])[:3]
+    gainers = sorted((c for c in movers if c["change_24h"] > 0), key=lambda c: c["change_24h"], reverse=True)[:3]
+    losers = sorted((c for c in movers if c["change_24h"] < 0), key=lambda c: c["change_24h"])[:3]
 
     btc = next((c for c in coins if c["symbol"] == "BTC"), None)
-    headline = None
+    headline = headline_ms = None
     if btc:
+        arah = "naik" if btc["change_24h"] >= 0 else "turun"
+        headline_ms = (
+            f"1 Bitcoin kini bernilai kira-kira RM{btc['price']:,.0f}, {arah} "
+            f"{abs(btc['change_24h']):.1f}% dalam 24 jam lepas."
+        )
         direction = "up" if btc["change_24h"] >= 0 else "down"
         headline = (
             f"1 Bitcoin is about RM{btc['price']:,.0f} right now, {direction} "
@@ -156,6 +199,7 @@ def build() -> dict:
         "updated_utc": datetime.now(timezone.utc).isoformat(timespec="seconds"),
         "currency": CURRENCY,
         "headline": headline,
+        "headline_ms": headline_ms,
         "global": {
             "market_cap": gq.get("total_market_cap"),
             "volume_24h": gq.get("total_volume_24h"),
