@@ -46,7 +46,7 @@ The API key lives only in a GitHub Actions secret (`CMC_API_KEY`). The browser n
 
 ## Evidence of real API calls
 
-Every build saves a trimmed copy of each live response in [`evidence/`](evidence/):
+Every hourly build saves a trimmed copy of each live response and publishes it with the site at [`/evidence/`](https://apihpih96.github.io/ringgit-radar/evidence/listings_latest.json):
 `listings_latest.json`, `global_metrics.json`, `fear_and_greed.json`. Each file contains the request (endpoint and params) and the response, including CMC's `status.timestamp` and `credit_count`.
 
 ## Run it yourself
