@@ -138,8 +138,8 @@
 
 <script>
 const T = {
-  en:{mood:"Market mood",total:"Whole crypto market",btcdom:"Bitcoin's share",btcdomnote:"How much of all crypto value is Bitcoin. Higher usually means people are playing it safer.",movers:"Today's biggest moves",calc:"What does my RM buy?",calcnote:"Before fees. Malaysian exchanges charge a small fee on every buy and sell.",all:"All",watch:"★ My watchlist",coin:"Coin",price:"Price (RM)",learn:"New to crypto? Read this first",q1:"Is crypto legal in Malaysia?",q2:"How much should I put in?",q3:"What is a stablecoin?",q4:"How do I spot a scam?",foot:"Data from the CoinMarketCap API, refreshed every hour. Not financial advice.",updated:"Updated",ago:"min ago",buys:"buys about",today:"today",mcapnote:"in the last 24 hours",tap:"Tap a coin for a simple explanation.",emptyWatch:"Tap ☆ on any coin to add it here.",up:"Up",down:"Down"},
-  ms:{mood:"Mood pasaran",total:"Seluruh pasaran kripto",btcdom:"Bahagian Bitcoin",btcdomnote:"Berapa banyak nilai kripto ialah Bitcoin. Lebih tinggi biasanya bermaksud orang lebih berhati-hati.",movers:"Pergerakan terbesar hari ini",calc:"RM saya boleh beli berapa?",calcnote:"Sebelum yuran. Bursa di Malaysia mengenakan yuran kecil setiap kali beli dan jual.",all:"Semua",watch:"★ Senarai saya",coin:"Syiling",price:"Harga (RM)",learn:"Baru dengan kripto? Baca ini dahulu",q1:"Adakah kripto sah di Malaysia?",q2:"Berapa banyak patut saya labur?",q3:"Apa itu stablecoin?",q4:"Bagaimana mengenal pasti penipuan?",foot:"Data daripada CoinMarketCap API, dikemas kini setiap jam. Bukan nasihat kewangan.",updated:"Dikemas kini",ago:"minit lalu",buys:"boleh beli kira-kira",today:"hari ini",mcapnote:"dalam 24 jam lepas",tap:"Tekan syiling untuk penerangan ringkas.",emptyWatch:"Tekan ☆ pada mana-mana syiling untuk tambah di sini.",up:"Naik",down:"Turun",
+  en:{mood:"Market mood",total:"Whole crypto market",btcdom:"Bitcoin's share",btcdomnote:"How much of all crypto value is Bitcoin. Higher usually means people are playing it safer.",movers:"Today's biggest moves",calc:"What does my RM buy?",calcnote:"Before fees. Malaysian exchanges charge a small fee on every buy and sell.",all:"All",watch:"★ My watchlist",coin:"Coin",price:"Price (RM)",learn:"New to crypto? Read this first",q1:"Is crypto legal in Malaysia?",q2:"How much should I put in?",q3:"What is a stablecoin?",q4:"How do I spot a scam?",foot:"Data from the CoinMarketCap API, refreshed every hour. Not financial advice.",updated:"Updated",ago:"min ago",buys:"buys about",today:"today",mcapnote:"in the last 24 hours",tap:"Tap a coin for a simple explanation.",emptyWatch:"Tap ☆ on any coin to add it here.",noMatch:"No coins match your search.",up:"Up",down:"Down"},
+  ms:{mood:"Mood pasaran",total:"Seluruh pasaran kripto",btcdom:"Bahagian Bitcoin",btcdomnote:"Berapa banyak nilai kripto ialah Bitcoin. Lebih tinggi biasanya bermaksud orang lebih berhati-hati.",movers:"Pergerakan terbesar hari ini",calc:"RM saya boleh beli berapa?",calcnote:"Sebelum yuran. Bursa di Malaysia mengenakan yuran kecil setiap kali beli dan jual.",all:"Semua",watch:"★ Senarai saya",coin:"Syiling",price:"Harga (RM)",learn:"Baru dengan kripto? Baca ini dahulu",q1:"Adakah kripto sah di Malaysia?",q2:"Berapa banyak patut saya labur?",q3:"Apa itu stablecoin?",q4:"Bagaimana mengenal pasti penipuan?",foot:"Data daripada CoinMarketCap API, dikemas kini setiap jam. Bukan nasihat kewangan.",updated:"Dikemas kini",ago:"minit lalu",buys:"boleh beli kira-kira",today:"hari ini",mcapnote:"dalam 24 jam lepas",tap:"Tekan syiling untuk penerangan ringkas.",emptyWatch:"Tekan ☆ pada mana-mana syiling untuk tambah di sini.",noMatch:"Tiada syiling sepadan dengan carian anda.",up:"Naik",down:"Turun",
       a1:"Ya. Membeli dan menjual kripto adalah sah. Gunakan bursa yang berdaftar dengan Suruhanjaya Sekuriti Malaysia. Platform tidak berdaftar boleh ditutup dan anda mungkin hilang wang.",
       a2:"Hanya wang yang anda sanggup hilang sepenuhnya. Kripto boleh jatuh 50% atau lebih. Jangan guna simpanan untuk sewa, makanan atau kecemasan.",
       a3:"Syiling yang dibina untuk kekal sekitar US$1, seperti USDT atau USDC. Dalam Ringgit, harganya hanya bergerak apabila kadar RM/USD bergerak.",
@@ -176,9 +176,9 @@ function applyLang(){
 function render(){
   const mins = Math.max(0, Math.round((Date.now() - new Date(D.updated_utc))/60000));
   $("#updated").textContent = `${t("updated")} ${mins} ${t("ago")} · ${t("tap")}`;
-  $("#headline").textContent = D.headline || "";
+  $("#headline").textContent = (L==="ms" && D.headline_ms) || D.headline || "";
   const fg = D.fear_greed;
-  if (fg){ $("#fgval").textContent = `${fg.value} · ${fg.label}`; $("#needle").style.left = `calc(${fg.value}% - 2px)`; $("#fgtext").textContent = fg.text; }
+  if (fg){ $("#fgval").textContent = `${fg.value} · ${(L==="ms" && fg.label_ms) || fg.label}`; $("#needle").style.left = `calc(${fg.value}% - 2px)`; $("#fgtext").textContent = (L==="ms" && fg.text_ms) || fg.text; }
   else { $("#fgval").textContent = "–"; }
   $("#mcap").textContent = rm(D.global.market_cap);
   const ch = D.global.market_cap_change_24h;
@@ -205,13 +205,13 @@ function render(){
       <div>${pct(c.change_24h)}</div>
       <div class="c7">${pct(c.change_7d)}</div>
       <div><button class="star ${watch.has(c.id)?"on":""}" data-star="${c.id}" aria-label="watch">${watch.has(c.id)?"★":"☆"}</button></div>
-      <div class="tip">${c.tip}</div>
-    </div>`).join("") : `<div class="row"><div></div><div class="sub" style="grid-column:2/-1">${t("emptyWatch")}</div></div>`;
+      <div class="tip">${(L==="ms" && c.tip_ms) || c.tip}</div>
+    </div>`).join("") : `<div class="row"><div></div><div class="sub" style="grid-column:2/-1">${q ? t("noMatch") : t("emptyWatch")}</div></div>`;
 }
 
 function calc(){
   if (!D) return;
-  const c = D.coins.find(x=>x.id==$("#coinsel").value); const a = parseFloat($("#amt").value)||0;
+  const c = D.coins.find(x=>x.id==$("#coinsel").value); const a = Math.max(0, parseFloat($("#amt").value)||0);
   if (!c) return;
   const n = a / c.price;
   $("#calcout").textContent = `RM${a.toLocaleString("en-MY")} ${t("buys")} ${n < 0.001 ? n.toFixed(8) : n < 1 ? n.toFixed(5) : n.toLocaleString("en-MY",{maximumFractionDigits:2})} ${c.symbol}`;
@@ -230,7 +230,7 @@ $("#fall").onclick = ()=>{ showWatch=false; $("#fall").classList.add("on"); $("#
 $("#fwatch").onclick = ()=>{ showWatch=true; $("#fwatch").classList.add("on"); $("#fall").classList.remove("on"); render(); };
 
 fetch("data.json?" + Date.now()).then(r=>r.json()).then(d=>{ D = d; applyLang(); render(); })
-  .catch(()=>{ $("#headline").textContent = "Couldn't load market data. Please refresh."; });
+  .catch(()=>{ $("#headline").textContent = L==="ms" ? "Data pasaran tidak dapat dimuatkan. Sila muat semula." : "Couldn't load market data. Please refresh."; });
 </script>
 </body>
 </html>
