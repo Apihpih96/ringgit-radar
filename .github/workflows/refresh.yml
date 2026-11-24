@@ -2,7 +2,9 @@ name: Refresh data and deploy
 
 on:
   schedule:
-    - cron: "7 * * * *"   # every hour
+    # GitHub often skips hourly schedules on new repos, so ask every 15 min.
+    # ~96 runs x 3 calls a day stays inside the free 15,000 credits a month.
+    - cron: "4,19,34,49 * * * *"
   workflow_dispatch:
   push:
     branches: [main]
